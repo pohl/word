@@ -1,0 +1,11 @@
+[package]
+name = "word"
+version = "0.1.0"
+authors = ["Pohl Longsine <pohl.longsine@gmail.com>"]
+
+[workspace]
+
+[dependencies]
+wordsapi-client = { git = "https://github.com/pohl/wordsapi-client.git", branch = "HelloWorld" }
+clap = "2.29"
+
