@@ -1,21 +1,26 @@
 extern crate wordsapi_client;
-extern crate clap; 
-use clap::{Arg, App}; 
+extern crate structopt;
+#[macro_use]
+extern crate structopt_derive;
+
+use structopt::StructOpt;
+
+#[derive(StructOpt, Debug)]
+#[structopt(name = "word", about = "Look up a word.")]
+struct Opt {
+    #[structopt(short = "d", long = "debug", help = "Activate debug mode")]
+    debug: bool,
+    #[structopt(help = "The word to look up")]
+    word: String,
+    #[structopt(help = "API token, from environment if not present")]
+    token: Option<String>,
+}
+
  
 fn main() { 
-    let matches = App::new("word")
-       .version("1.0")
-       .about("A simple client for WordsAPI.")
-       .author("Pohl Longsine")
-       .arg(Arg::with_name("WORD")
-            .help("Sets the input file to use")
-            .required(true)
-            .index(1))
-       .get_matches(); 
-    let words: Vec<&str> = matches.values_of("WORD").unwrap().collect();
-    for word in &words {
-        wordsapi_client::look_up_word(&word)
-    }
+    let opt = Opt::from_args();
+    println!("{:?}", opt);
+    wordsapi_client::look_up_word(&opt.word)
 }
 
 
