@@ -2,6 +2,7 @@ extern crate wordsapi_client;
 extern crate structopt;
 #[macro_use]
 extern crate structopt_derive;
+extern crate config;
 
 use structopt::StructOpt;
 
@@ -20,7 +21,13 @@ struct Opt {
 fn main() { 
     let opt = Opt::from_args();
     println!("{:?}", opt);
-    wordsapi_client::look_up_word(&opt.word)
+
+    let mut settings = config::Config::default();
+    settings
+	.merge(config::File::with_name("Settings")).unwrap()
+        .merge(config::Environment::with_prefix("WORD")).unwrap();
+    let token = settings.get_str("token").unwrap();
+    wordsapi_client::look_up_word(&opt.word, &token)
 }
 
 

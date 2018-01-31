@@ -7,6 +7,7 @@ authors = ["Pohl Longsine <pohl.longsine@gmail.com>"]
 
 [dependencies]
 wordsapi-client = { git = "https://github.com/pohl/wordsapi-client.git", branch = "HelloWorld" }
+# wordsapi-client = { path = "../wordsapi-client/" }
 structopt = "0.1.0"
 structopt-derive = "0.1.0"
-
+config = "0.8.0"
