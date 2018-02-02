@@ -27,7 +27,7 @@ fn main() {
 	.merge(config::File::with_name("Settings")).unwrap()
         .merge(config::Environment::with_prefix("WORD")).unwrap();
     let token = settings.get_str("token").unwrap();
-    wordsapi_client::look_up_word(&opt.word, &token)
+    wordsapi_client::look_up_word(&opt.word, &token);
 }
 
 
