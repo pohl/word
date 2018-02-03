@@ -20,14 +20,18 @@ struct Opt {
  
 fn main() { 
     let opt = Opt::from_args();
-    println!("{:?}", opt);
 
     let mut settings = config::Config::default();
     settings
 	.merge(config::File::with_name("Settings")).unwrap()
         .merge(config::Environment::with_prefix("WORD")).unwrap();
     let token = settings.get_str("token").unwrap();
-    wordsapi_client::look_up_word(&opt.word, &token);
+
+    let result = wordsapi_client::look_up_word(&opt.word, &token);
+    match result {
+        Ok(_v) => println!("Got a value"),
+        Err(e) => println!("Got an error {}", e)
+    }
 }
 
 
