@@ -1,6 +1,6 @@
 # word
 
-A simple command-line program for looking up a word.
+A simple command-line program for looking up a word, using the [wordsapi-client](https://github.com/pohl/wordsapi-client) crate.
 
 ```
 $ word rust
