@@ -1,8 +1,8 @@
-extern crate wordsapi_client;
+extern crate config;
 extern crate structopt;
 #[macro_use]
 extern crate structopt_derive;
-extern crate config;
+extern crate wordsapi_client;
 
 use structopt::StructOpt;
 use wordsapi_client::WordData;
@@ -18,35 +18,35 @@ struct Opt {
     token: Option<String>,
 }
 
- 
-fn main() { 
+fn main() {
     let opt = Opt::from_args();
 
     let mut settings = config::Config::default();
     settings
-	    .merge(config::File::with_name("Settings")).unwrap()
-        .merge(config::Environment::with_prefix("WORD")).unwrap();
+        .merge(config::File::with_name("Settings"))
+        .unwrap()
+        .merge(config::Environment::with_prefix("WORD"))
+        .unwrap();
     let token = settings.get_str("token").unwrap();
 
     let result = wordsapi_client::look_up_word(&opt.word, &token);
     match result {
         Ok(v) => display(&v),
-        Err(e) => println!("Got an error {}", e)
+        Err(e) => println!("Got an error {}", e),
     }
 }
 
-fn display(word:&WordData) {
+fn display(word: &WordData) {
     println!("{} |{}|", &word.word, pronunciation(word));
     for e in &word.results {
         println!("   {}: {}", e.part_of_speech, e.definition);
     }
 }
 
-fn pronunciation(word:&WordData) -> &str {
+fn pronunciation(word: &WordData) -> &str {
     let p = word.pronunciation.get("all");
     match p {
         Some(p) => p,
-        None => ""        
+        None => "",
     }
 }
-
