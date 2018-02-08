@@ -28,8 +28,8 @@ fn main() {
         .merge(config::Environment::with_prefix("WORD"))
         .unwrap();
     let token = settings.get_str("token").unwrap();
-
-    let result = wordsapi_client::look_up_word(&opt.word, &token);
+    let word_client = wordsapi_client::WordClient::new(&token);
+    let result = word_client.look_up(&opt.word);
     match result {
         Ok(v) => display(&v),
         Err(e) => println!("Got an error {}", e),
