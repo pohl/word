@@ -4,8 +4,13 @@ extern crate structopt;
 extern crate structopt_derive;
 extern crate wordsapi_client;
 
+use std::path::PathBuf;
 use structopt::StructOpt;
 use wordsapi_client::{WordData, WordResponse};
+use std::env;
+use std::fs;
+use std::io;
+use std::io::Write;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "word", about = "Look up a word.")]
@@ -42,16 +47,40 @@ fn handle(mut response: WordResponse, opt: &Opt) {
     if opt.json {
         display_json(&mut response)
     } else {
+        /*
         let data = response.try_parse();
         match data {
             Ok(mut wd) => display_definition(&mut wd),
             Err(e) => println!("WordAPI Clent response error: {}", e),
         }
+        */
+        let json = response.raw_json();
+        write_to_cache(&json, &opt);
     }
 }
 
 fn display_json(response: &mut WordResponse) {
     println!("{}", response.raw_json());
+}
+
+fn write_to_cache(json: &str, opt: &Opt) -> Result<(), io::Error> {
+    let cache_dir = match env::home_dir() {
+        Some(path) => path.join(".word"),
+        None => PathBuf::from("."),
+    };
+    println!("cache_dir is {}", cache_dir.display());
+    fs::create_dir_all(&cache_dir);
+    let mut dest = {
+        let fname = format!("{}.json", &opt.word);
+        println!("saving using file name: '{}'", fname);
+        let fname = cache_dir.join(fname);
+        println!("will be located under: '{:?}'", fname);
+        // create file with given name inside the temp dir
+        fs::File::create(fname)?
+    };
+    // data is copied into the target file
+    dest.write_all(json.as_bytes());
+    Ok(())
 }
 
 fn display_definition(word: &WordData) {
