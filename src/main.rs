@@ -1,7 +1,6 @@
 extern crate config;
-extern crate structopt;
 #[macro_use]
-extern crate structopt_derive;
+extern crate structopt;
 extern crate wordsapi_client;
 
 use std::path::PathBuf;
@@ -56,6 +55,13 @@ fn handle(mut response: WordResponse, opt: &Opt) {
         */
         let json = response.raw_json();
         write_to_cache(&json, &opt);
+        // let word: WordData = response.word_data();
+        /*
+        match word {
+            Ok(mut wd) => display_definition(&mut wd),
+            Err(e) => println!("WordAPI Clent response error: {}", e),
+        }
+        */    
     }
 }
 

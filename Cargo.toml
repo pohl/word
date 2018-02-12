@@ -7,6 +7,5 @@ authors = ["Pohl Longsine <pohl.longsine@gmail.com>"]
 
 [dependencies]
 wordsapi-client = { path = "../wordsapi-client" }
-structopt = "0.1"
-structopt-derive = "0.1"
+structopt = "0.2"
 config = "0.8"
