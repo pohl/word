@@ -46,22 +46,12 @@ fn handle(mut response: WordResponse, opt: &Opt) {
     if opt.json {
         display_json(&mut response)
     } else {
-        /*
-        let data = response.try_parse();
-        match data {
-            Ok(mut wd) => display_definition(&mut wd),
-            Err(e) => println!("WordAPI Clent response error: {}", e),
-        }
-        */
         let json = response.raw_json();
         write_to_cache(&json, &opt);
-        // let word: WordData = response.word_data();
-        /*
-        match word {
+        match response.try_parse() {
             Ok(mut wd) => display_definition(&mut wd),
             Err(e) => println!("WordAPI Clent response error: {}", e),
         }
-        */    
     }
 }
 
@@ -75,18 +65,21 @@ fn write_to_cache(json: &str, opt: &Opt) -> Result<(), io::Error> {
         None => PathBuf::from("."),
     };
     println!("cache_dir is {}", cache_dir.display());
-    fs::create_dir_all(&cache_dir);
+    create_cache_dir(&cache_dir);
     let mut dest = {
         let fname = format!("{}.json", &opt.word);
         println!("saving using file name: '{}'", fname);
         let fname = cache_dir.join(fname);
         println!("will be located under: '{:?}'", fname);
-        // create file with given name inside the temp dir
         fs::File::create(fname)?
     };
-    // data is copied into the target file
-    dest.write_all(json.as_bytes());
-    Ok(())
+    match dest.write_all(json.as_bytes()) {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            println!("Warning: could not write cache file: {}", e);
+            Ok(())
+        }
+    }
 }
 
 fn display_definition(word: &WordData) {
@@ -101,5 +94,15 @@ fn pronunciation(word: &WordData) -> &str {
     match p {
         Some(p) => p,
         None => "",
+    }
+}
+
+fn create_cache_dir(ref cache_dir: &PathBuf) {
+    match fs::create_dir_all(&cache_dir) {
+        Ok(_) => (),
+        Err(e) => {
+            println!("Warning: could not create cache directory: {}", e);
+            ()
+        }
     }
 }
