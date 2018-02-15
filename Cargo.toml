@@ -6,7 +6,8 @@ authors = ["Pohl Longsine <pohl.longsine@gmail.com>"]
 [workspace]
 
 [dependencies]
-wordsapi-client = { path = "../wordsapi-client" }
+#wordsapi-client = { path = "../wordsapi-client" }
+wordsapi-client = { git = "https://github.com/pohl/wordsapi-client.git" }
 structopt = "0.2"
 config = "0.8"
 serde_json = "1.0"
