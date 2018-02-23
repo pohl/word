@@ -46,14 +46,14 @@ fn main() {
     }
 }
 
-fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &String) -> Result<(), WordAPIError> {
+fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<(), WordAPIError> {
     if opt.json {
         display_json(word_json);
         Ok(())
     } else {
         match wordsapi_client::try_parse(word_json) {
             Ok(ref word_data) => {
-                display_word_data(word_data, &opt);
+                display_word_data(word_data, opt);
                 Ok(())
             }
             Err(_e) => Err(WordAPIError::ResultParseError),
@@ -65,7 +65,7 @@ fn load_word_json(settings: &Config, word: &str) -> Result<String, Error> {
     let cache_dir = get_cache_dir();
     println!("cache_dir is {}", cache_dir.display());
     create_cache_dir(&cache_dir);
-    let cache_file_path = get_cache_file_path(&cache_dir, &word);
+    let cache_file_path = get_cache_file_path(&cache_dir, word);
     match read_cache_file(&cache_file_path) {
         Ok(cached_json) => Ok(cached_json),
         Err(_e) => {
@@ -92,7 +92,7 @@ fn fetch_word_json(settings: &Config, word: &str) -> Result<String, Error> {
 }
 
 fn display_word_data(word_data: &WordData, _opt: &Opt) {
-    display_definition(&word_data);
+    display_definition(word_data);
 }
 
 fn display_json(word_json: &str) {
@@ -101,7 +101,7 @@ fn display_json(word_json: &str) {
 
 fn write_to_cache(json: &str, cache_file_path: &PathBuf) {
     match fs::File::create(cache_file_path) {
-        Ok(cache_file) => write_to_cache_file(&json, cache_file),
+        Ok(cache_file) => write_to_cache_file(json, cache_file),
         Err(e) => println!("Warning: could not write cache file: {}", e),
     }
 }
@@ -130,7 +130,7 @@ fn pronunciation(word: &WordData) -> &str {
     }
 }
 
-fn create_cache_dir(ref cache_dir: &PathBuf) {
+fn create_cache_dir(cache_dir: &PathBuf) {
     match fs::create_dir_all(&cache_dir) {
         Ok(_) => (),
         Err(e) => {
@@ -147,7 +147,7 @@ fn get_cache_dir() -> PathBuf {
     }
 }
 
-fn get_cache_file_path(ref cache_dir: &PathBuf, word: &str) -> PathBuf {
+fn get_cache_file_path(cache_dir: &PathBuf, word: &str) -> PathBuf {
     let fname = format!("{}.json", word);
     println!("saving using file name: '{}'", fname);
     let fname = cache_dir.join(fname);
@@ -155,7 +155,7 @@ fn get_cache_file_path(ref cache_dir: &PathBuf, word: &str) -> PathBuf {
     fname
 }
 
-fn read_cache_file(ref cache_file_path: &PathBuf) -> io::Result<String> {
+fn read_cache_file(cache_file_path: &PathBuf) -> io::Result<String> {
     let mut cache_file = fs::File::open(cache_file_path)?;
     let mut contents = String::new();
     let _size = cache_file.read_to_string(&mut contents)?;
