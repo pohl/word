@@ -86,7 +86,10 @@ fn fetch_word_json(settings: &Config, word: &str) -> Result<String, Error> {
     let word_client = wordsapi_client::WordClient::new(&token);
     let result = word_client.look_up(word);
     match result {
-        Ok(wr) => Ok(wr.raw_json().to_string()),
+        Ok(wr) => { 
+            println!("{} API requests remaining.", wr.requests_remaining()); 
+            Ok(wr.raw_json().to_string())
+        },
         Err(e) => Err(Error::new(ErrorKind::Other, e)),
     }
 }
