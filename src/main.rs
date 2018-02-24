@@ -87,8 +87,8 @@ fn fetch_word_json(settings: &Config, word: &str) -> Result<String, Error> {
     let result = word_client.look_up(word);
     match result {
         Ok(wr) => { 
-            println!("{} API requests remaining.", wr.requests_remaining()); 
-            Ok(wr.raw_json().to_string())
+            println!("{} API requests remaining of {}.", &wr.rate_limit_remaining, &wr.rate_limit_requests_limit); 
+            Ok(wr.response_json)
         },
         Err(e) => Err(Error::new(ErrorKind::Other, e)),
     }
