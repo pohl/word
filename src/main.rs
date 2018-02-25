@@ -18,8 +18,8 @@ use std::io::ErrorKind;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "word", about = "Look up a word.")]
 struct Opt {
-    #[structopt(short = "d", long = "debug", help = "Activate debug mode")]
-    debug: bool,
+    #[structopt(short = "v", long = "verbose", help = "Show verbose output")]
+    verbose: bool,
     #[structopt(short = "j", long = "json", help = "Output raw json")]
     json: bool,
     #[structopt(help = "The word to look up")]
@@ -37,7 +37,7 @@ fn main() {
         .unwrap()
         .merge(config::Environment::with_prefix("WORD"))
         .unwrap();
-    match load_word_json(&settings, &opt.word) {
+    match load_word_json(&settings, &opt) {
         Ok(ref word_json) => match handle_word_json(&settings, &opt, word_json) {
             Ok(()) => (),
             Err(e) => println!("Could not parse word json {}", e),
@@ -61,16 +61,20 @@ fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<()
     }
 }
 
-fn load_word_json(settings: &Config, word: &str) -> Result<String, Error> {
+fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let cache_dir = get_cache_dir();
-    println!("cache_dir is {}", cache_dir.display());
+    if opt.verbose {
+        println!("cache_dir is {}", cache_dir.display());
+    }
     create_cache_dir(&cache_dir);
-    let cache_file_path = get_cache_file_path(&cache_dir, word);
+    let cache_file_path = get_cache_file_path(&cache_dir, opt);
     match read_cache_file(&cache_file_path) {
         Ok(cached_json) => Ok(cached_json),
         Err(_e) => {
-            println!("could not find cached json, calling service...");
-            match fetch_word_json(settings, word) {
+            if opt.verbose {
+                println!("could not find cached json, calling service...");
+            }
+            match fetch_word_json(settings, opt) {
                 Ok(fetched_json) => {
                     write_to_cache(&fetched_json, &cache_file_path);
                     Ok(fetched_json)
@@ -81,13 +85,15 @@ fn load_word_json(settings: &Config, word: &str) -> Result<String, Error> {
     }
 }
 
-fn fetch_word_json(settings: &Config, word: &str) -> Result<String, Error> {
+fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let token = settings.get_str("token").unwrap();
     let word_client = wordsapi_client::WordClient::new(&token);
-    let result = word_client.look_up(word);
+    let result = word_client.look_up(&opt.word);
     match result {
         Ok(wr) => { 
-            println!("{} API requests remaining of {}.", &wr.rate_limit_remaining, &wr.rate_limit_requests_limit); 
+            if opt.verbose {
+                println!("{} API requests remaining of {}.", &wr.rate_limit_remaining, &wr.rate_limit_requests_limit);
+            }
             Ok(wr.response_json)
         },
         Err(e) => Err(Error::new(ErrorKind::Other, e)),
@@ -150,11 +156,15 @@ fn get_cache_dir() -> PathBuf {
     }
 }
 
-fn get_cache_file_path(cache_dir: &PathBuf, word: &str) -> PathBuf {
-    let fname = format!("{}.json", word);
-    println!("saving using file name: '{}'", fname);
+fn get_cache_file_path(cache_dir: &PathBuf, opt: &Opt) -> PathBuf {
+    let fname = format!("{}.json", &opt.word);
+    if opt.verbose {
+        println!("saving using file name: '{}'", fname);
+    }
     let fname = cache_dir.join(fname);
-    println!("will be located under: '{:?}'", fname);
+    if opt.verbose {
+        println!("will be located under: '{:?}'", fname);
+    }
     fname
 }
 
@@ -164,3 +174,4 @@ fn read_cache_file(cache_file_path: &PathBuf) -> io::Result<String> {
     let _size = cache_file.read_to_string(&mut contents)?;
     Ok(contents)
 }
+
