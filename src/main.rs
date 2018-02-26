@@ -52,8 +52,9 @@ fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<()
         Ok(())
     } else {
         match wordsapi_client::try_parse(word_json) {
-            Ok(ref word_data) => {
-                display_word_data(word_data, opt);
+            Ok(word_data) => {
+                let word_display = WordDisplay::new(word_data, opt);
+                word_display.display_word_data();
                 Ok(())
             }
             Err(_e) => Err(WordAPIError::ResultParseError),
@@ -100,10 +101,6 @@ fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     }
 }
 
-fn display_word_data(word_data: &WordData, _opt: &Opt) {
-    display_definition(word_data);
-}
-
 fn display_json(word_json: &str) {
     println!("{}", word_json);
 }
@@ -124,18 +121,36 @@ fn write_to_cache_file(json: &str, mut cache_file: std::fs::File) {
     }
 }
 
-fn display_definition(word: &WordData) {
-    println!("{} |{}|", &word.word, pronunciation(word));
-    for e in &word.results {
-        println!("   {}: {}", e.part_of_speech, e.definition);
-    }
+struct WordDisplay<'a> {
+    data: WordData,
+    options: &'a Opt,
 }
 
-fn pronunciation(word: &WordData) -> &str {
-    let p = word.pronunciation.get("all");
-    match p {
-        Some(p) => p,
-        None => "",
+impl<'a> WordDisplay<'a> {
+    pub fn new(data: WordData, options: &'a Opt) -> WordDisplay<'a> {
+        WordDisplay {
+            data: data,
+            options: options,
+        }
+    }
+
+    fn display_word_data(&self) {
+        self.display_definition();
+    }
+
+    fn display_definition(&self) {
+        println!("{} |{}|", self.data.word, self.pronunciation());
+        for e in &self.data.results {
+            println!("   {}: {}", e.part_of_speech, e.definition);
+        }
+    }
+
+    fn pronunciation(&self) -> &str {
+        let p = self.data.pronunciation.get("all");
+        match p {
+            Some(p) => p,
+            None => "",
+        }
     }
 }
 
