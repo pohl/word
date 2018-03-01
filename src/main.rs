@@ -20,6 +20,18 @@ use std::io::ErrorKind;
 struct Opt {
     #[structopt(short = "v", long = "verbose", help = "Show verbose output")]
     verbose: bool,
+    #[structopt(short = "s", long = "synonym", help = "Show synonyms for the word")]
+    synonym: bool,
+    #[structopt(short = "a", long = "antonym", help = "Show antonyms for the word")]
+    antonym: bool,
+    #[structopt(short = "d", long = "definition", help = "Show definitions for the word")]
+    definition: bool,
+    #[structopt(short = "e", long = "hypernym", help = "Show hypernyms for the word")]
+    hypernym: bool,
+    #[structopt(short = "o", long = "hyponym", help = "Show hyponyms for the word")]
+    hyponym: bool,
+    #[structopt(short = "l", long = "holonym", help = "Show holonyms for the word")]
+    holonym: bool,        
     #[structopt(short = "j", long = "json", help = "Output raw json")]
     json: bool,
     #[structopt(help = "The word to look up")]
