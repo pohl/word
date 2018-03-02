@@ -141,13 +141,26 @@ struct WordDisplay<'a> {
 impl<'a> WordDisplay<'a> {
     pub fn new(data: WordData, options: &'a Opt) -> WordDisplay<'a> {
         WordDisplay {
-            data: data,
-            options: options,
+            data,
+            options,
         }
     }
 
+    fn no_options(&self) -> bool {
+        self.options.antonym || 
+        self.options.synonym || 
+        self.options.definition || 
+        self.options.holonym || 
+        self.options.hypernym ||
+        self.options.hyponym
+    }
+
     fn display_word_data(&self) {
-        self.display_definition();
+        if !self.no_options() {
+            self.display_definition();
+        } else {
+            println!("non default");
+        }
     }
 
     fn display_definition(&self) {
