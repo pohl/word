@@ -1,3 +1,4 @@
+#![feature(slice_concat_ext)]
 extern crate config;
 extern crate serde_json;
 #[macro_use]
@@ -6,7 +7,7 @@ extern crate wordsapi_client;
 
 use std::path::PathBuf;
 use structopt::StructOpt;
-use wordsapi_client::{WordAPIError, WordData};
+use wordsapi_client::{WordAPIError, WordData, WordEntry};
 use std::env;
 use std::fs;
 use std::io;
@@ -18,22 +19,22 @@ use std::io::ErrorKind;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "word", about = "Look up a word.")]
 struct Opt {
-    #[structopt(short = "v", long = "verbose", help = "Show verbose output")]
-    verbose: bool,
-    #[structopt(short = "s", long = "synonym", help = "Show synonyms for the word")]
-    synonym: bool,
     #[structopt(short = "a", long = "antonym", help = "Show antonyms for the word")]
     antonym: bool,
-    #[structopt(short = "d", long = "definition", help = "Show definitions for the word")]
-    definition: bool,
+    #[structopt(short = "s", long = "synonym", help = "Show synonyms for the word")]
+    synonym: bool,
     #[structopt(short = "e", long = "hypernym", help = "Show hypernyms for the word")]
     hypernym: bool,
     #[structopt(short = "o", long = "hyponym", help = "Show hyponyms for the word")]
     hyponym: bool,
     #[structopt(short = "l", long = "holonym", help = "Show holonyms for the word")]
-    holonym: bool,        
+    holonym: bool,
+    #[structopt(short = "A", long = "all", help = "Show all the nyms")]
+    all: bool,
     #[structopt(short = "j", long = "json", help = "Output raw json")]
     json: bool,
+    #[structopt(short = "v", long = "verbose", help = "Show verbose output")]
+    verbose: bool,    
     #[structopt(help = "The word to look up")]
     word: String,
     #[structopt(help = "API token, from environment if not present")]
@@ -147,35 +148,52 @@ impl<'a> WordDisplay<'a> {
     }
 
     fn no_options(&self) -> bool {
-        self.options.antonym || 
+        !(self.options.antonym || 
         self.options.synonym || 
-        self.options.definition || 
-        self.options.holonym || 
         self.options.hypernym ||
-        self.options.hyponym
+        self.options.hyponym ||
+        self.options.holonym)
     }
 
     fn display_word_data(&self) {
-        if !self.no_options() {
-            self.display_definition();
-        } else {
-            println!("non default");
-        }
+        self.display_variants();
     }
 
-    fn display_definition(&self) {
-        println!("{} |{}|", self.data.word, self.pronunciation());
+    fn display_variants(&self) {
+        self.display_pronunciation();
         for e in &self.data.results {
-            println!("   {}: {}", e.part_of_speech, e.definition);
+            self.display_variant(e);
         }
     }
 
-    fn pronunciation(&self) -> &str {
-        let p = self.data.pronunciation.get("all");
-        match p {
+    fn display_pronunciation(&self) {
+        let pronunciation = match self.data.pronunciation.get("all") {
             Some(p) => p,
             None => "",
+        };
+        println!("{} |{}|", self.data.word, pronunciation);
+    }
+
+    fn display_variant(&self, entry: &WordEntry) {
+        println!("({}) {}", entry.part_of_speech, entry.definition);
+        if self.options.antonym || self.options.all {
+            self.display_antonyms(entry);
         }
+    }
+
+    fn display_antonyms(&self, entry: &WordEntry) {
+        let result = match entry.antonyms {
+           Some(ref antonyms) => {
+               let mut buffer = String::from("");
+               for a in antonyms {
+                   buffer.push_str(a);
+                   buffer.push_str(", ");
+               }
+               buffer
+           },
+           None => "(None)".to_owned()
+        };
+        println!("   antonyms: {}", result);
     }
 }
 
