@@ -1,5 +1,5 @@
-#![feature(slice_concat_ext)]
 extern crate config;
+extern crate itertools;
 extern crate serde_json;
 #[macro_use]
 extern crate structopt;
@@ -34,7 +34,7 @@ struct Opt {
     #[structopt(short = "j", long = "json", help = "Output raw json")]
     json: bool,
     #[structopt(short = "v", long = "verbose", help = "Show verbose output")]
-    verbose: bool,    
+    verbose: bool,
     #[structopt(help = "The word to look up")]
     word: String,
     #[structopt(help = "API token, from environment if not present")]
@@ -104,12 +104,15 @@ fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let word_client = wordsapi_client::WordClient::new(&token);
     let result = word_client.look_up(&opt.word);
     match result {
-        Ok(wr) => { 
+        Ok(wr) => {
             if opt.verbose {
-                println!("{} API requests remaining of {}.", &wr.rate_limit_remaining, &wr.rate_limit_requests_limit);
+                println!(
+                    "{} API requests remaining of {}.",
+                    &wr.rate_limit_remaining, &wr.rate_limit_requests_limit
+                );
             }
             Ok(wr.response_json)
-        },
+        }
         Err(e) => Err(Error::new(ErrorKind::Other, e)),
     }
 }
@@ -141,18 +144,7 @@ struct WordDisplay<'a> {
 
 impl<'a> WordDisplay<'a> {
     pub fn new(data: WordData, options: &'a Opt) -> WordDisplay<'a> {
-        WordDisplay {
-            data,
-            options,
-        }
-    }
-
-    fn no_options(&self) -> bool {
-        !(self.options.antonym || 
-        self.options.synonym || 
-        self.options.hypernym ||
-        self.options.hyponym ||
-        self.options.holonym)
+        WordDisplay { data, options }
     }
 
     fn display_word_data(&self) {
@@ -177,23 +169,29 @@ impl<'a> WordDisplay<'a> {
     fn display_variant(&self, entry: &WordEntry) {
         println!("({}) {}", entry.part_of_speech, entry.definition);
         if self.options.antonym || self.options.all {
-            self.display_antonyms(entry);
+            self.display_nyms(&entry.antonyms, "antonyms");
         }
+        if self.options.synonym || self.options.all {
+            self.display_nyms(&entry.synonyms, "synonyms");
+        }
+        if self.options.hypernym || self.options.all {
+            self.display_nyms(&entry.type_of, "hypernyms");
+        }
+        if self.options.hyponym || self.options.all {
+            self.display_nyms(&entry.has_types, "hyponyms");
+        }
+        if self.options.holonym || self.options.all {
+            self.display_nyms(&entry.part_of, "holonyms");
+        }
+        println!();
     }
 
-    fn display_antonyms(&self, entry: &WordEntry) {
-        let result = match entry.antonyms {
-           Some(ref antonyms) => {
-               let mut buffer = String::from("");
-               for a in antonyms {
-                   buffer.push_str(a);
-                   buffer.push_str(", ");
-               }
-               buffer
-           },
-           None => "(None)".to_owned()
+    fn display_nyms(&self, nyms: &Option<Vec<String>>, label: &str) {
+        let result = match *nyms {
+            Some(ref ns) => ns.join(","),
+            None => "(None)".to_owned(),
         };
-        println!("   antonyms: {}", result);
+        println!("   {}: {}", label, result);
     }
 }
 
@@ -232,4 +230,3 @@ fn read_cache_file(cache_file_path: &PathBuf) -> io::Result<String> {
     let _size = cache_file.read_to_string(&mut contents)?;
     Ok(contents)
 }
-

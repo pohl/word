@@ -11,3 +11,4 @@ wordsapi-client = { path = "../wordsapi-client" }
 structopt = "0.2"
 config = "0.8"
 serde_json = "1.0"
+itertools = "0.7.6"
