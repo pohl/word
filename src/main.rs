@@ -7,7 +7,7 @@ extern crate wordsapi_client;
 
 use std::path::PathBuf;
 use structopt::StructOpt;
-use wordsapi_client::{WordAPIError, WordData, WordEntry};
+use wordsapi_client::{WordAPIError, WordData, WordEntry, WordRequestType};
 use std::env;
 use std::fs;
 use std::io;
@@ -102,7 +102,7 @@ fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
 fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let token = settings.get_str("token").unwrap();
     let word_client = wordsapi_client::WordClient::new(&token);
-    let result = word_client.look_up(&opt.word);
+    let result = word_client.look_up(&opt.word, &WordRequestType::Everything);
     match result {
         Ok(wr) => {
             if opt.verbose {
