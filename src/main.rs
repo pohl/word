@@ -167,7 +167,8 @@ impl<'a> WordDisplay<'a> {
     }
 
     fn display_variant(&self, entry: &WordEntry) {
-        println!("({}) {}", entry.part_of_speech, entry.definition);
+        println!("({}) {}", entry.part_of_speech.as_ref().unwrap_or(&
+            "?".to_string()), entry.definition);
         if self.options.antonym || self.options.all {
             self.display_nyms(&entry.antonyms, "antonyms");
         }
@@ -193,6 +194,7 @@ impl<'a> WordDisplay<'a> {
         };
         println!("   {}: {}", label, result);
     }
+
 }
 
 fn create_cache_dir(cache_dir: &PathBuf) {
