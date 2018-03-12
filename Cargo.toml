@@ -1,6 +1,6 @@
 [package]
 name = "word"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Pohl Longsine <pohl.longsine@gmail.com>"]
 
 [workspace]
@@ -11,3 +11,4 @@ wordsapi-client = { git = "https://github.com/pohl/wordsapi-client.git" }
 structopt = "0.2"
 config = "0.8"
 serde_json = "1.0"
+itertools = "0.7.6"
