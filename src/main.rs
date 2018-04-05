@@ -5,16 +5,16 @@ extern crate serde_json;
 extern crate structopt;
 extern crate wordsapi_client;
 
-use std::path::PathBuf;
-use structopt::StructOpt;
-use wordsapi_client::{WordAPIError, WordData, WordEntry, WordRequestType};
+use config::Config;
 use std::env;
 use std::fs;
 use std::io;
-use std::io::{Read, Write};
-use config::Config;
 use std::io::Error;
 use std::io::ErrorKind;
+use std::io::{Read, Write};
+use std::path::PathBuf;
+use structopt::StructOpt;
+use wordsapi_client::{WordAPIError, WordData, WordEntry, WordRequestType};
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "word", about = "Look up a word.")]
@@ -167,8 +167,11 @@ impl<'a> WordDisplay<'a> {
     }
 
     fn display_variant(&self, entry: &WordEntry) {
-        println!("({}) {}", entry.part_of_speech.as_ref().unwrap_or(&
-            "?".to_string()), entry.definition);
+        println!(
+            "({}) {}",
+            entry.part_of_speech.as_ref().unwrap_or(&"?".to_string()),
+            entry.definition
+        );
         if self.options.antonym || self.options.all {
             self.display_nyms(&entry.antonyms, "antonyms");
         }
@@ -194,7 +197,6 @@ impl<'a> WordDisplay<'a> {
         };
         println!("   {}: {}", label, result);
     }
-
 }
 
 fn create_cache_dir(cache_dir: &PathBuf) {
