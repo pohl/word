@@ -219,15 +219,22 @@ fn get_cache_dir() -> PathBuf {
 }
 
 fn get_cache_file_path(cache_dir: &PathBuf, opt: &Opt) -> PathBuf {
-    let fname = format!("{}.json", &opt.word);
+    let filename: String = opt.word
+        .chars()
+        .map(|x| match x {
+            ' ' => '_',
+            _ => x,
+        })
+        .collect();
+    let filename = format!("{}.json", filename);
     if opt.verbose {
-        println!("saving using file name: '{}'", fname);
+        println!("saving using file name: '{}'", filename);
     }
-    let fname = cache_dir.join(fname);
+    let filename = cache_dir.join(filename);
     if opt.verbose {
-        println!("will be located under: '{:?}'", fname);
+        println!("will be located under: '{:?}'", filename);
     }
-    fname
+    filename
 }
 
 fn read_cache_file(cache_file_path: &PathBuf) -> io::Result<String> {
