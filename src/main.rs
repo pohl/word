@@ -159,11 +159,13 @@ impl<'a> WordDisplay<'a> {
     }
 
     fn display_pronunciation(&self) {
-        let pronunciation = match self.data.pronunciation.get("all") {
-            Some(p) => p,
-            None => "",
-        };
-        println!("{} |{}|", self.data.word, pronunciation);
+        if let Some(ref pronunciations) = self.data.pronunciation {
+            let pronunciation = match pronunciations.get("all") {
+                Some(p) => p,
+                None => "",
+            };
+            println!("{} |{}|", self.data.word, pronunciation);
+        }
     }
 
     fn display_variant(&self, entry: &WordEntry) {
