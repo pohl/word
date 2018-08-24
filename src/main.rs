@@ -1,7 +1,6 @@
 extern crate config;
 extern crate itertools;
 extern crate serde_json;
-#[macro_use]
 extern crate structopt;
 extern crate wordsapi_client;
 
@@ -102,7 +101,7 @@ fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
 fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let token = settings.get_str("token").unwrap();
     let word_client = wordsapi_client::WordClient::new(&token);
-    let result = word_client.look_up(&opt.word, &WordRequestType::Everything);
+    let result = word_client.look_up(&opt.word, &WordRequestType::Synonyms);
     match result {
         Ok(wr) => {
             if opt.verbose {
@@ -219,14 +218,14 @@ fn get_cache_dir() -> PathBuf {
 }
 
 fn get_cache_file_path(cache_dir: &PathBuf, opt: &Opt) -> PathBuf {
-    let filename: String = opt.word
+    let stem: String = opt.word
         .chars()
         .map(|x| match x {
             ' ' => '_',
             _ => x,
         })
         .collect();
-    let filename = format!("{}.json", filename);
+    let filename = format!("{}.json", stem);
     if opt.verbose {
         println!("saving using file name: '{}'", filename);
     }
