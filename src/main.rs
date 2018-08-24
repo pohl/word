@@ -18,15 +18,35 @@ use wordsapi_client::{WordAPIError, WordData, WordEntry, WordRequestType};
 #[derive(StructOpt, Debug)]
 #[structopt(name = "word", about = "Look up a word.")]
 struct Opt {
-    #[structopt(short = "a", long = "antonym", help = "Show antonyms for the word")]
+    #[structopt(
+        short = "a",
+        long = "antonym",
+        help = "Show antonyms for the word"
+    )]
     antonym: bool,
-    #[structopt(short = "s", long = "synonym", help = "Show synonyms for the word")]
+    #[structopt(
+        short = "s",
+        long = "synonym",
+        help = "Show synonyms for the word"
+    )]
     synonym: bool,
-    #[structopt(short = "e", long = "hypernym", help = "Show hypernyms for the word")]
+    #[structopt(
+        short = "e",
+        long = "hypernym",
+        help = "Show hypernyms for the word"
+    )]
     hypernym: bool,
-    #[structopt(short = "o", long = "hyponym", help = "Show hyponyms for the word")]
+    #[structopt(
+        short = "o",
+        long = "hyponym",
+        help = "Show hyponyms for the word"
+    )]
     hyponym: bool,
-    #[structopt(short = "l", long = "holonym", help = "Show holonyms for the word")]
+    #[structopt(
+        short = "l",
+        long = "holonym",
+        help = "Show holonyms for the word"
+    )]
     holonym: bool,
     #[structopt(short = "A", long = "all", help = "Show all the nyms")]
     all: bool,
@@ -218,13 +238,13 @@ fn get_cache_dir() -> PathBuf {
 }
 
 fn get_cache_file_path(cache_dir: &PathBuf, opt: &Opt) -> PathBuf {
-    let stem: String = opt.word
+    let stem: String = opt
+        .word
         .chars()
         .map(|x| match x {
             ' ' => '_',
             _ => x,
-        })
-        .collect();
+        }).collect();
     let filename = format!("{}.json", stem);
     if opt.verbose {
         println!("saving using file name: '{}'", filename);
