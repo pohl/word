@@ -121,7 +121,7 @@ fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
 fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let token = settings.get_str("token").unwrap();
     let word_client = wordsapi_client::WordClient::new(&token);
-    let result = word_client.look_up(&opt.word, &WordRequestType::Synonyms);
+    let result = word_client.look_up(&opt.word, &WordRequestType::Everything);
     match result {
         Ok(wr) => {
             if opt.verbose {
