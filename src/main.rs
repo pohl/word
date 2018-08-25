@@ -1,11 +1,11 @@
 extern crate config;
+extern crate dirs;
 extern crate itertools;
 extern crate serde_json;
 extern crate structopt;
 extern crate wordsapi_client;
 
 use config::Config;
-use std::env;
 use std::fs;
 use std::io;
 use std::io::Error;
@@ -231,7 +231,7 @@ fn create_cache_dir(cache_dir: &PathBuf) {
 }
 
 fn get_cache_dir() -> PathBuf {
-    match env::home_dir() {
+    match dirs::home_dir() {
         Some(path) => path.join(".word"),
         None => PathBuf::from("./.word"),
     }
