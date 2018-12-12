@@ -204,8 +204,7 @@ fn create_cache_dir(cache_dir: &PathBuf) {
     match fs::create_dir_all(&cache_dir) {
         Ok(_) => (),
         Err(e) => {
-            println!("Warning: could not create cache directory: {}", e);
-            ()
+            println!("Warning: could not create cache directory: {}", e)
         }
     }
 }
