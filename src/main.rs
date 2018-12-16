@@ -143,7 +143,7 @@ struct WordDisplay<'a> {
 
 impl<'a> WordDisplay<'a> {
     pub fn new(data: WordData, options: &'a Opt) -> WordDisplay<'a> {
-        WordDisplay { data, options }
+        Self { data, options }
     }
 
     fn display_word_data(&self) {
@@ -203,9 +203,7 @@ impl<'a> WordDisplay<'a> {
 fn create_cache_dir(cache_dir: &PathBuf) {
     match fs::create_dir_all(&cache_dir) {
         Ok(_) => (),
-        Err(e) => {
-            println!("Warning: could not create cache directory: {}", e)
-        }
+        Err(e) => println!("Warning: could not create cache directory: {}", e),
     }
 }
 
