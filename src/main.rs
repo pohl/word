@@ -3,7 +3,7 @@ extern crate dirs;
 extern crate itertools;
 extern crate serde_json;
 extern crate structopt;
-extern crate wordsapi_client;
+extern crate wordsapi;
 
 use config::Config;
 use std::fs;
@@ -13,7 +13,7 @@ use std::io::ErrorKind;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
-use wordsapi_client::{WordAPIError, WordData, WordEntry, WordRequestType};
+use wordsapi::{WordAPIError, WordData, WordEntry, WordRequestType};
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "word", about = "Look up a word.")]
@@ -63,7 +63,7 @@ fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<()
         display_json(word_json);
         Ok(())
     } else {
-        match wordsapi_client::try_parse(word_json) {
+        match wordsapi::try_parse(word_json) {
             Ok(word_data) => {
                 let word_display = WordDisplay::new(word_data, opt);
                 word_display.display_word_data();
@@ -100,7 +100,7 @@ fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
 
 fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let token = settings.get_str("token").unwrap();
-    let word_client = wordsapi_client::WordClient::new(&token);
+    let word_client = wordsapi::WordClient::new(&token);
     let result = word_client.look_up(&opt.word, &WordRequestType::Everything);
     match result {
         Ok(wr) => {
