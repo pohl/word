@@ -1,14 +1,17 @@
 [package]
 name = "word"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Pohl Longsine <pohl.longsine@gmail.com>"]
+edition = "2018"
 
 [workspace]
 
 [dependencies]
-#wordsapi-client = { path = "../wordsapi-client" }
-wordsapi-client = { git = "https://github.com/pohl/wordsapi-client.git" }
+#wordsapi = { path = "../wordsapi" }
+wordsapi = { git = "https://github.com/pohl/wordsapi.git" }
 structopt = "0.2"
-config = "0.8"
+config = "0.9"
 serde_json = "1.0"
-itertools = "0.7.6"
+itertools = "0.8"
+dirs = "1.0"
+#rand_core = "0.2.2" # https://github.com/rust-random/rand/issues/645

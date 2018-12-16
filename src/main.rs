@@ -1,20 +1,19 @@
 extern crate config;
+extern crate dirs;
 extern crate itertools;
 extern crate serde_json;
-#[macro_use]
 extern crate structopt;
-extern crate wordsapi_client;
+extern crate wordsapi;
 
-use std::path::PathBuf;
-use structopt::StructOpt;
-use wordsapi_client::{WordAPIError, WordData, WordEntry, WordRequestType};
-use std::env;
+use config::Config;
 use std::fs;
 use std::io;
-use std::io::{Read, Write};
-use config::Config;
 use std::io::Error;
 use std::io::ErrorKind;
+use std::io::{Read, Write};
+use std::path::PathBuf;
+use structopt::StructOpt;
+use wordsapi::{WordAPIError, WordData, WordEntry, WordRequestType};
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "word", about = "Look up a word.")]
@@ -64,7 +63,7 @@ fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<()
         display_json(word_json);
         Ok(())
     } else {
-        match wordsapi_client::try_parse(word_json) {
+        match wordsapi::try_parse(word_json) {
             Ok(word_data) => {
                 let word_display = WordDisplay::new(word_data, opt);
                 word_display.display_word_data();
@@ -101,7 +100,7 @@ fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
 
 fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let token = settings.get_str("token").unwrap();
-    let word_client = wordsapi_client::WordClient::new(&token);
+    let word_client = wordsapi::WordClient::new(&token);
     let result = word_client.look_up(&opt.word, &WordRequestType::Everything);
     match result {
         Ok(wr) => {
@@ -144,7 +143,7 @@ struct WordDisplay<'a> {
 
 impl<'a> WordDisplay<'a> {
     pub fn new(data: WordData, options: &'a Opt) -> WordDisplay<'a> {
-        WordDisplay { data, options }
+        Self { data, options }
     }
 
     fn display_word_data(&self) {
@@ -159,16 +158,21 @@ impl<'a> WordDisplay<'a> {
     }
 
     fn display_pronunciation(&self) {
-        let pronunciation = match self.data.pronunciation.get("all") {
-            Some(p) => p,
-            None => "",
-        };
-        println!("{} |{}|", self.data.word, pronunciation);
+        if let Some(ref pronunciations) = self.data.pronunciation {
+            let pronunciation = match pronunciations.get("all") {
+                Some(p) => p,
+                None => "",
+            };
+            println!("{} |{}|", self.data.word, pronunciation);
+        }
     }
 
     fn display_variant(&self, entry: &WordEntry) {
-        println!("({}) {}", entry.part_of_speech.as_ref().unwrap_or(&
-            "?".to_string()), entry.definition);
+        println!(
+            "({}) {}",
+            entry.part_of_speech.as_ref().unwrap_or(&"?".to_string()),
+            entry.definition
+        );
         if self.options.antonym || self.options.all {
             self.display_nyms(&entry.antonyms, "antonyms");
         }
@@ -194,36 +198,40 @@ impl<'a> WordDisplay<'a> {
         };
         println!("   {}: {}", label, result);
     }
-
 }
 
 fn create_cache_dir(cache_dir: &PathBuf) {
     match fs::create_dir_all(&cache_dir) {
         Ok(_) => (),
-        Err(e) => {
-            println!("Warning: could not create cache directory: {}", e);
-            ()
-        }
+        Err(e) => println!("Warning: could not create cache directory: {}", e),
     }
 }
 
 fn get_cache_dir() -> PathBuf {
-    match env::home_dir() {
+    match dirs::home_dir() {
         Some(path) => path.join(".word"),
         None => PathBuf::from("./.word"),
     }
 }
 
 fn get_cache_file_path(cache_dir: &PathBuf, opt: &Opt) -> PathBuf {
-    let fname = format!("{}.json", &opt.word);
+    let stem: String = opt
+        .word
+        .chars()
+        .map(|x| match x {
+            ' ' => '_',
+            _ => x,
+        })
+        .collect();
+    let filename = format!("{}.json", stem);
     if opt.verbose {
-        println!("saving using file name: '{}'", fname);
+        println!("saving using file name: '{}'", filename);
     }
-    let fname = cache_dir.join(fname);
+    let filename = cache_dir.join(filename);
     if opt.verbose {
-        println!("will be located under: '{:?}'", fname);
+        println!("will be located under: '{:?}'", filename);
     }
-    fname
+    filename
 }
 
 fn read_cache_file(cache_file_path: &PathBuf) -> io::Result<String> {
