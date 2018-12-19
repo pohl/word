@@ -13,7 +13,7 @@ use std::io::ErrorKind;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
-use wordsapi::{WordAPIError, WordData, WordEntry, WordRequestType};
+use wordsapi::{Entry, RequestError, RequestType, Word};
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "word", about = "Look up a word.")]
@@ -58,7 +58,7 @@ fn main() {
     }
 }
 
-fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<(), WordAPIError> {
+fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<(), RequestError> {
     if opt.json {
         display_json(word_json);
         Ok(())
@@ -69,7 +69,7 @@ fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<()
                 word_display.display_word_data();
                 Ok(())
             }
-            Err(_e) => Err(WordAPIError::ResultParseError),
+            Err(_e) => Err(RequestError::ResultParseError),
         }
     }
 }
@@ -100,8 +100,8 @@ fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
 
 fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let token = settings.get_str("token").unwrap();
-    let word_client = wordsapi::WordClient::new(&token);
-    let result = word_client.look_up(&opt.word, &WordRequestType::Everything);
+    let word_client = wordsapi::Client::new(&token);
+    let result = word_client.look_up(&opt.word, &RequestType::Everything);
     match result {
         Ok(wr) => {
             if opt.verbose {
@@ -137,12 +137,12 @@ fn write_to_cache_file(json: &str, mut cache_file: std::fs::File) {
 }
 
 struct WordDisplay<'a> {
-    data: WordData,
+    data: Word,
     options: &'a Opt,
 }
 
 impl<'a> WordDisplay<'a> {
-    pub fn new(data: WordData, options: &'a Opt) -> WordDisplay<'a> {
+    pub fn new(data: Word, options: &'a Opt) -> WordDisplay<'a> {
         Self { data, options }
     }
 
@@ -152,7 +152,7 @@ impl<'a> WordDisplay<'a> {
 
     fn display_variants(&self) {
         self.display_pronunciation();
-        for e in &self.data.results {
+        for e in &self.data.entries {
             self.display_variant(e);
         }
     }
@@ -167,7 +167,7 @@ impl<'a> WordDisplay<'a> {
         }
     }
 
-    fn display_variant(&self, entry: &WordEntry) {
+    fn display_variant(&self, entry: &Entry) {
         println!(
             "({}) {}",
             entry.part_of_speech.as_ref().unwrap_or(&"?".to_string()),
