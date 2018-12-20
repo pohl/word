@@ -13,7 +13,7 @@ use std::io::ErrorKind;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
-use wordsapi::{Entry, RequestError, RequestType, Word};
+use wordsapi::{Entry, RequestError, Word};
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "word", about = "Look up a word.")]
@@ -101,7 +101,7 @@ fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
 fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let token = settings.get_str("token").unwrap();
     let word_client = wordsapi::Client::new(&token);
-    let result = word_client.look_up(&opt.word, &RequestType::Everything);
+    let result = word_client.look_up::<Word>(&opt.word);
     match result {
         Ok(wr) => {
             if opt.verbose {
