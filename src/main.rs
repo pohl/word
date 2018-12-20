@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 extern crate config;
 extern crate dirs;
 extern crate itertools;
