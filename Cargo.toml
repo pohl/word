@@ -16,4 +16,4 @@ itertools = "0.8"
 dirs = "1.0"
 #rand_core = "0.2.2" # https://github.com/rust-random/rand/issues/645
 stderrlog = "0.4.1"
-log = "0.4"
+log = "0.4"`
