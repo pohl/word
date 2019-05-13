@@ -9,7 +9,7 @@ extern crate wordsapi;
 #[macro_use]
 extern crate log;
 use config::Config;
-use log::{debug, error, info};
+use log::{debug, error};
 use std::fs;
 use std::io;
 use std::io::Error;
@@ -53,8 +53,8 @@ fn main() {
     let opt = Opt::from_args();
     stderrlog::new()
         .module(module_path!())
-        .quiet(opt.verbose == 0)
-        .verbosity(opt.verbose + 2)
+        .module("wordsapi")
+        .verbosity(opt.verbose)
         .timestamp(stderrlog::Timestamp::Off)
         .init()
         .unwrap();
@@ -78,6 +78,7 @@ fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<()
         display_json(word_json);
         Ok(())
     } else {
+        trace!("attempting to parse json");
         match wordsapi::try_parse(word_json) {
             Ok(word_data) => {
                 let word_display = WordDisplay::new(word_data, opt);
@@ -91,6 +92,7 @@ fn handle_word_json(_settings: &Config, opt: &Opt, word_json: &str) -> Result<()
 
 fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let cache_dir = get_cache_dir();
+    trace!("looking for cached data");
     debug!("cache_dir is {}", cache_dir.display());
     create_cache_dir(&cache_dir);
     let cache_file_path = get_cache_file_path(&cache_dir, opt);
@@ -115,7 +117,7 @@ fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let result = word_client.look_up::<Word>(&opt.word);
     match result {
         Ok(wr) => {
-            info!(
+            warn!(
                 "{} API requests remaining of {}.",
                 &wr.rate_limit_remaining, &wr.rate_limit_requests_limit
             );
@@ -234,7 +236,7 @@ fn get_cache_file_path(cache_dir: &PathBuf, opt: &Opt) -> PathBuf {
         })
         .collect();
     let filename = format!("{}.json", stem);
-    debug!("saving using file name: '{}'", filename);
+    trace!("expect cache file name to be: '{}'", filename);
     let filename = cache_dir.join(filename);
     debug!("will be located under: '{:?}'", filename);
     filename
