@@ -113,7 +113,7 @@ fn load_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
 
 fn fetch_word_json(settings: &Config, opt: &Opt) -> Result<String, Error> {
     let token = settings.get_str("token").unwrap();
-    let word_client = wordsapi::Client::new(&token);
+    let word_client = wordsapi::Client::new(token);
     let result = word_client.look_up::<Word>(&opt.word);
     match result {
         Ok(wr) => {
